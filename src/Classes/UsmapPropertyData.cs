@@ -10,7 +10,7 @@ namespace UsmapNET.Classes
 		public UsmapPropertyData InnerType { get; set; }
 		public UsmapPropertyData ValueType { get; set; }
 
-		public UsmapPropertyData(EUsmapPropertyType type)
+		internal UsmapPropertyData(EUsmapPropertyType type)
 		{
 			Type = type;
 		}
