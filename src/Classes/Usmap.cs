@@ -74,11 +74,15 @@ namespace UsmapNET.Classes
 					fileReader.Dispose();
 					var data = new byte[decompSize];
 					using var decompressor = new OodleDecompressor(options.OodlePath);
-					var result = decompressor.Decompress(compData, compSize, data, decompSize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
 
-					if (result != decompSize)
+					unsafe
 					{
-						throw new FileLoadException($"Invalid oodle .usmap decompress result: {result} / {decompSize}");
+						var result = decompressor.Decompress(compData, compSize, data, decompSize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+
+						if (result != decompSize)
+						{
+							throw new FileLoadException($"Invalid oodle .usmap decompress result: {result} / {decompSize}");
+						}
 					}
 
 					reader = new GenericBufferReader(data);
