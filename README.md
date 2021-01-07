@@ -21,15 +21,16 @@ var usmap = new Usmap(@"C:\Test\Example.usmap", new UsmapOptions
 
 ### Info
 
-The `UsmapOptions` are only required for loading oodle compressed usmap files.
+The `UsmapOptions` are only required for loading oodle compressed usmap files.  
 Oodle decompression has been tested on windows and linux (x64).
 
 ### NuGet
 
-    Install-Package Usmap.NET
+```md
+Install-Package Usmap.NET
+```
 
 ### Contribute
 
-If you can provide any help, may it only be spell checking please contribute!
-
+If you can provide any help, may it only be spell checking please contribute!  
 I am open for any contribution.
