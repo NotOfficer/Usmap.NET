@@ -15,11 +15,11 @@ namespace UsmapNET.Classes
 		public UsmapEnum[] Enums { get; }
 		public UsmapSchema[] Schemas { get; }
 
-		public Usmap(string filePath) : this(new GenericStreamReader(filePath)) { }
-		public Usmap(Stream fileStream) : this(new GenericStreamReader(fileStream)) { }
-		public Usmap(byte[] fileBuffer) : this(new GenericBufferReader(fileBuffer)) { }
+		public Usmap(string filePath, UsmapOptions options = null) : this(new GenericStreamReader(filePath), options) { }
+		public Usmap(Stream fileStream, UsmapOptions options = null) : this(new GenericStreamReader(fileStream), options) { }
+		public Usmap(byte[] fileBuffer, UsmapOptions options = null) : this(new GenericBufferReader(fileBuffer), options) { }
 
-		internal Usmap(GenericReader fileReader)
+		internal Usmap(GenericReader fileReader, UsmapOptions options)
 		{
 			var magic = fileReader.Read<ushort>();
 
@@ -60,10 +60,21 @@ namespace UsmapNET.Classes
 				}
 				case EUsmapCompressionMethod.Oodle:
 				{
+					if (options?.OodlePath == null)
+					{
+						throw new FileLoadException("Undefined oodle library path");
+					}
+
+					if (!File.Exists(options.OodlePath))
+					{
+						throw new FileLoadException($"Could not find oodle library at \"{options.OodlePath}\"");
+					}
+
 					var compData = fileReader.ReadBytes((int)compSize);
 					fileReader.Dispose();
 					var data = new byte[decompSize];
-					var result = Utilities.OodleLZ_Decompress(compData, compSize, data, decompSize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+					using var decompressor = new OodleDecompressor(options.OodlePath);
+					var result = decompressor.Decompress(compData, compSize, data, decompSize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
 
 					if (result != decompSize)
 					{

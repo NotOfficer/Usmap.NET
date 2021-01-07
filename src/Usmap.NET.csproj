@@ -12,6 +12,8 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>usmap parser</PackageTags>
 		<NeutralLanguage>en</NeutralLanguage>
+		<Version>1.1.0</Version>
+		<PackageReleaseNotes>Easier oodle library usage</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
