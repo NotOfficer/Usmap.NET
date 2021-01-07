@@ -8,19 +8,25 @@ A .NET parser for .usmap files
 
 </div>
 
-## NuGet
-
-    Install-Package Usmap.NET
-
 ## Example Usage
 
 ```cs
 using UsmapNET;
 
-var usmap = new Usmap(@"C:\Downloads\Example.usmap");
+var usmap = new Usmap(@"C:\Test\Example.usmap", new UsmapOptions
+{
+    OodlePath = @"C:\Test\oo2core_8_win64.dll"
+});
 ```
 
-If you want to parse oodle comrpessed usmap files, you will need to have the oodle library renamed to `oo2core64` in your working directory.
+### Info
+
+The `UsmapOptions` are only required for loading oodle compressed usmap files.
+Oodle decompression has been tested on windows and linux (x64).
+
+### NuGet
+
+    Install-Package Usmap.NET
 
 ### Contribute
 
