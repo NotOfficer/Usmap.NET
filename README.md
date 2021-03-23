@@ -15,13 +15,14 @@ using UsmapNET;
 
 var usmap = new Usmap(@"C:\Test\Example.usmap", new UsmapOptions
 {
-    OodlePath = @"C:\Test\oo2core_8_win64.dll"
+    OodlePath = @"C:\Test\oo2core_8_win64.dll",
+    SaveNames = false
 });
 ```
 
 ### Info
 
-The `UsmapOptions` are only required for loading oodle compressed usmap files.  
+The `UsmapOptions.OodlePath` is only required for loading oodle compressed usmap files.  
 Oodle decompression has been tested on windows and linux (x64).
 
 ### NuGet
