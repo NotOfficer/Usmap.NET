@@ -11,7 +11,7 @@ A .NET parser for .usmap files
 ## Example Usage
 
 ```cs
-using UsmapNET;
+using Usmap.NET;
 
 var usmap = new Usmap(@"C:\Test\Example.usmap", new UsmapOptions
 {
