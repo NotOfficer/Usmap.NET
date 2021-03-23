@@ -1,4 +1,4 @@
-﻿namespace UsmapNET.Classes
+﻿namespace Usmap.NET
 {
 	public readonly struct UsmapSchema
 	{

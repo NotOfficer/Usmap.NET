@@ -3,9 +3,11 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 
-using UsmapNET.Enums;
+using GenericReader;
 
-namespace UsmapNET.Classes
+using Oodle.NET;
+
+namespace Usmap.NET
 {
 	public class Usmap
 	{
@@ -19,7 +21,7 @@ namespace UsmapNET.Classes
 		public Usmap(Stream fileStream, UsmapOptions options = null) : this(new GenericStreamReader(fileStream), options) { }
 		public Usmap(byte[] fileBuffer, UsmapOptions options = null) : this(new GenericBufferReader(fileBuffer), options) { }
 
-		internal Usmap(GenericReader fileReader, UsmapOptions options)
+		internal Usmap(IGenericReader fileReader, UsmapOptions options)
 		{
 			var magic = fileReader.Read<ushort>();
 
@@ -44,7 +46,8 @@ namespace UsmapNET.Classes
 				throw new FileLoadException("There is not enough data in the .usmap file");
 			}
 
-			GenericReader reader;
+			options ??= new UsmapOptions();
+			IGenericReader reader;
 
 			switch (compMethod)
 			{
@@ -60,7 +63,7 @@ namespace UsmapNET.Classes
 				}
 				case EUsmapCompressionMethod.Oodle:
 				{
-					if (options?.OodlePath == null)
+					if (options.OodlePath == null)
 					{
 						throw new FileLoadException("Undefined oodle library path");
 					}
@@ -73,11 +76,11 @@ namespace UsmapNET.Classes
 					var compData = fileReader.ReadBytes((int)compSize);
 					fileReader.Dispose();
 					var data = new byte[decompSize];
-					using var decompressor = new OodleDecompressor(options.OodlePath);
+					using var decompressor = new OodleCompressor(options.OodlePath);
 
 					unsafe
 					{
-						var result = decompressor.Decompress(compData, compSize, data, decompSize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+						var result = decompressor.Decompress(compData, compSize, data, decompSize, OodleLZ_FuzzSafe.No, OodleLZ_CheckCRC.No, OodleLZ_Verbosity.None, 0L, 0L, 0L, 0L, 0L, 0L, OodleLZ_Decode_ThreadPhase.Unthreaded);
 
 						if (result != decompSize)
 						{
@@ -108,15 +111,17 @@ namespace UsmapNET.Classes
 					throw new FileLoadException($"Unknown .usmap compression method: {(int)compMethod}");
 			}
 
+			string[] names;
+
 			{
 				var size = reader.Read<uint>();
-				Names = new string[size];
+				names = new string[size];
 
 				for (var i = 0; i < size; ++i)
 				{
 					var nameSize = reader.ReadByte();
 					var name = reader.ReadString(nameSize, Encoding.UTF8);
-					Names[i] = name;
+					names[i] = name;
 				}
 			}
 
@@ -133,10 +138,10 @@ namespace UsmapNET.Classes
 					for (var j = 0; j < enumNamesSize; ++j)
 					{
 						var nameIdx = reader.Read<uint>();
-						enumNames[j] = Names[nameIdx];
+						enumNames[j] = names[nameIdx];
 					}
 
-					Enums[i] = new UsmapEnum(Names[idx], enumNames);
+					Enums[i] = new UsmapEnum(names[idx], enumNames);
 				}
 			}
 
@@ -158,57 +163,22 @@ namespace UsmapNET.Classes
 						var schemaIdx = reader.Read<ushort>();
 						var arraySize = reader.Read<byte>();
 						var nameIdx = reader.Read<uint>();
-						var data = DeserializePropData(reader);
-						props[j] = new UsmapProperty(Names[nameIdx], schemaIdx, arraySize, data);
+						var data = UsmapPropertyData.Deserialize(reader, names);
+						props[j] = new UsmapProperty(names[nameIdx], schemaIdx, arraySize, data);
 					}
 
-					Schemas[i] = new UsmapSchema(Names[idx], superIdx == uint.MaxValue ? null : Names[superIdx], propCount, props);
+					Schemas[i] = new UsmapSchema(names[idx], superIdx == uint.MaxValue ? null : names[superIdx], propCount, props);
 				}
 			}
+
+			Names = options.SaveNames ? names : null;
 
 			reader.Dispose();
 		}
 
-		private UsmapPropertyData DeserializePropData(GenericReader reader)
-		{
-			var propType = reader.Read<EUsmapPropertyType>();
-			var data = new UsmapPropertyData(propType);
-
-			switch (propType)
-			{
-				case EUsmapPropertyType.EnumProperty:
-				{
-					data.InnerType = DeserializePropData(reader);
-					var idx = reader.Read<uint>();
-					data.EnumName = Names[idx];
-					break;
-				}
-				case EUsmapPropertyType.StructProperty:
-				{
-					var idx = reader.Read<uint>();
-					data.StructType = Names[idx];
-					break;
-				}
-				case EUsmapPropertyType.SetProperty:
-				case EUsmapPropertyType.ArrayProperty:
-				{
-					data.InnerType = DeserializePropData(reader);
-					break;
-				}
-				case EUsmapPropertyType.MapProperty:
-				{
-					data.InnerType = DeserializePropData(reader);
-					data.ValueType = DeserializePropData(reader);
-					break;
-				}
-			}
-
-			return data;
-		}
-
 		public override string ToString()
 		{
-			return $"Schemas: {Schemas.Length} | Enums: {Enums.Length}";
+			return $"Schemas: {Schemas.Length} | Enums: {Enums.Length} | Names: {Names?.Length ?? 0}";
 		}
 	}
 }

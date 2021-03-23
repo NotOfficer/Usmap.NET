@@ -1,4 +1,4 @@
-﻿namespace UsmapNET.Enums
+﻿namespace Usmap.NET
 {
 	public enum EUsmapCompressionMethod : byte
 	{
