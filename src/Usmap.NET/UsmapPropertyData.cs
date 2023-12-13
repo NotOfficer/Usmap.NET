@@ -37,6 +37,7 @@ namespace Usmap.NET
 				}
 				case EUsmapPropertyType.SetProperty:
 				case EUsmapPropertyType.ArrayProperty:
+				case EUsmapPropertyType.OptionalProperty:
 				{
 					data.InnerType = Deserialize(reader, names);
 					break;
