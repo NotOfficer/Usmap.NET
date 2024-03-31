@@ -1,10 +1,9 @@
-﻿namespace Usmap.NET
-{
-	public enum EUsmapVersion : byte
-	{
-		INITIAL,
+﻿namespace UsmapDotNet;
 
-		LATEST_PLUS_ONE,
-		LATEST = LATEST_PLUS_ONE - 1
-	}
+public enum EUsmapVersion : byte
+{
+	Initial,
+
+	LatestPlusOne,
+	Latest = LatestPlusOne - 1
 }

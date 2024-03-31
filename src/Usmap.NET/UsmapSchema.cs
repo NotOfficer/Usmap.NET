@@ -1,23 +1,22 @@
-﻿namespace Usmap.NET
+﻿namespace UsmapDotNet;
+
+public class UsmapSchema
 {
-	public readonly struct UsmapSchema
+	public string Name { get; }
+	public string? SuperType { get; }
+	public ushort PropCount { get; }
+	public UsmapProperty[] Properties { get; }
+
+	internal UsmapSchema(string name, string? superType, ushort propCount, UsmapProperty[] properties)
 	{
-		public string Name { get; }
-		public string SuperType { get; }
-		public ushort PropCount { get; }
-		public UsmapProperty[] Properties { get; }
+		Name = name;
+		SuperType = superType;
+		PropCount = propCount;
+		Properties = properties;
+	}
 
-		public UsmapSchema(string name, string superType, ushort propCount, UsmapProperty[] properties)
-		{
-			Name = name;
-			SuperType = superType;
-			PropCount = propCount;
-			Properties = properties;
-		}
-
-		public override string ToString()
-		{
-			return $"{Name}{(SuperType == null ? null : $":{SuperType}")} | {Properties.Length} ({PropCount})";
-		}
+	public override string ToString()
+	{
+		return $"{Name}{(SuperType == null ? null : $":{SuperType}")} | {Properties.Length} ({PropCount})";
 	}
 }

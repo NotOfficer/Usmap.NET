@@ -1,8 +1,9 @@
-﻿namespace Usmap.NET
+﻿using OodleDotNet;
+
+namespace UsmapDotNet;
+
+public class UsmapOptions
 {
-	public class UsmapOptions
-	{
-		public string OodlePath { get; set; }
-		public bool SaveNames { get; set; } = true;
-	}
+	public Oodle? Oodle { get; set; }
+	public bool SaveNames { get; set; } = true;
 }

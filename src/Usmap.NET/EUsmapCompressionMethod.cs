@@ -1,10 +1,12 @@
-﻿namespace Usmap.NET
+﻿namespace UsmapDotNet;
+
+public enum EUsmapCompressionMethod : byte
 {
-	public enum EUsmapCompressionMethod : byte
-	{
-		None,
-		Oodle,
-		Brotli,
-		Unknown = byte.MaxValue
-	}
+	None,
+	Oodle,
+	Brotli,
+
+	MaxPlusOne,
+	Max = MaxPlusOne - 1,
+	Unknown = byte.MaxValue
 }

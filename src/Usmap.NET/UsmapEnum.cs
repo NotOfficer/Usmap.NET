@@ -1,19 +1,18 @@
-﻿namespace Usmap.NET
+﻿namespace UsmapDotNet;
+
+public class UsmapEnum
 {
-	public readonly struct UsmapEnum
+	public string Name { get; }
+	public string[] Names { get; }
+
+	public UsmapEnum(string name, string[] names)
 	{
-		public string Name { get; }
-		public string[] Names { get; }
+		Name = name;
+		Names = names;
+	}
 
-		public UsmapEnum(string name, string[] names)
-		{
-			Name = name;
-			Names = names;
-		}
-
-		public override string ToString()
-		{
-			return $"{Name} | {Names.Length}";
-		}
+	public override string ToString()
+	{
+		return $"{Name} | {Names.Length}";
 	}
 }
