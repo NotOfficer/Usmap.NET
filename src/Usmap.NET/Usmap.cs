@@ -20,8 +20,7 @@ public class Usmap
 	public Usmap(IGenericReader usmapReader, UsmapOptions? options, bool disposeReader = true)
 	{
 		IGenericReader? reader = null;
-		byte[]? compressedBuffer = null;
-		byte[]? uncompressedBuffer = null;
+		byte[]? compressionBuffer = null;
 
 		try
 		{
@@ -38,58 +37,46 @@ public class Usmap
 
 			options ??= new UsmapOptions();
 
-			switch (header.CompressionMethod)
+			if (header.CompressionMethod == EUsmapCompressionMethod.None)
 			{
-				case EUsmapCompressionMethod.None:
+				if (header.CompressedSize != header.UncompressedSize)
+					throw new FileLoadException("No .usmap compression: Compression size must be equal to decompression size");
+
+				reader = usmapReader;
+			}
+			else
+			{
+				compressionBuffer = ArrayPool<byte>.Shared.Rent((int)(header.CompressedSize + header.UncompressedSize));
+				var compressedSpan = new Span<byte>(compressionBuffer, 0, (int)header.CompressedSize);
+				usmapReader.Read(compressedSpan);
+				var uncompressedMemory = new Memory<byte>(compressionBuffer, (int)header.CompressedSize, (int)header.UncompressedSize);
+
+				switch (header.CompressionMethod)
 				{
-					if (header.CompressedSize != header.UncompressedSize)
-						throw new FileLoadException(
-							"No .usmap compression: Compression size must be equal to decompression size");
+					case EUsmapCompressionMethod.Oodle:
+					{
+						if (options.Oodle is null)
+							throw new FileLoadException("Undefined oodle instance");
 
-					reader = usmapReader;
-					break;
+						var result = (uint)options.Oodle.Decompress(compressedSpan, uncompressedMemory.Span);
+						if (result != header.UncompressedSize)
+							throw new FileLoadException($"Invalid oodle .usmap decompress result: {result} / {header.UncompressedSize}");
+						break;
+					}
+					case EUsmapCompressionMethod.Brotli:
+					{
+						using var decoder = new BrotliDecoder();
+						var result = decoder.Decompress(compressedSpan, uncompressedMemory.Span, out var bytesConsumed,
+							out var bytesWritten);
+						if (result != OperationStatus.Done)
+							throw new FileLoadException($"Invalid brotli .usmap decompress result: {result} | {bytesWritten} / {header.UncompressedSize} | {bytesConsumed} / {header.CompressedSize}");
+						break;
+					}
+					default:
+						throw new UnreachableException();
 				}
-				case EUsmapCompressionMethod.Oodle:
-				{
-					if (options.Oodle is null)
-						throw new FileLoadException("Undefined oodle instance");
 
-					compressedBuffer = ArrayPool<byte>.Shared.Rent((int)header.CompressedSize);
-					var compressedSpan = new Span<byte>(compressedBuffer, 0, (int)header.CompressedSize);
-					usmapReader.Read(compressedSpan);
-
-					uncompressedBuffer = ArrayPool<byte>.Shared.Rent((int)header.UncompressedSize);
-					var uncompressedSpan = new Span<byte>(uncompressedBuffer, 0, (int)header.UncompressedSize);
-
-					var result = (uint)options.Oodle.Decompress(compressedSpan, uncompressedSpan);
-					if (result != header.UncompressedSize)
-						throw new FileLoadException(
-							$"Invalid oodle .usmap decompress result: {result} / {header.UncompressedSize}");
-
-					reader = new GenericBufferReader(uncompressedBuffer, 0, (int)header.UncompressedSize);
-					break;
-				}
-				case EUsmapCompressionMethod.Brotli:
-				{
-					compressedBuffer = ArrayPool<byte>.Shared.Rent((int)header.CompressedSize);
-					var compressedSpan = new Span<byte>(compressedBuffer, 0, (int)header.CompressedSize);
-					usmapReader.Read(compressedSpan);
-
-					uncompressedBuffer = ArrayPool<byte>.Shared.Rent((int)header.UncompressedSize);
-					var uncompressedSpan = new Span<byte>(uncompressedBuffer, 0, (int)header.UncompressedSize);
-
-					using var decoder = new BrotliDecoder();
-					var result = decoder.Decompress(compressedSpan, uncompressedSpan, out var bytesConsumed,
-						out var bytesWritten);
-					if (result != OperationStatus.Done)
-						throw new FileLoadException(
-							$"Invalid brotli .usmap decompress result: {result} | {bytesWritten} / {header.UncompressedSize} | {bytesConsumed} / {header.CompressedSize}");
-
-					reader = new GenericBufferReader(uncompressedBuffer, 0, (int)header.UncompressedSize);
-					break;
-				}
-				default:
-					throw new UnreachableException();
+				reader = new GenericBufferReader(uncompressedMemory);
 			}
 
 			string[] names;
@@ -157,8 +144,7 @@ public class Usmap
 						}
 					}
 
-					Schemas[i] = new UsmapSchema(names[idx], superIdx == uint.MaxValue ? null : names[superIdx],
-						propCount, props);
+					Schemas[i] = new UsmapSchema(names[idx], superIdx == uint.MaxValue ? null : names[superIdx], propCount, props);
 				}
 			}
 
@@ -168,10 +154,8 @@ public class Usmap
 		{
 			if (disposeReader && reader is not null)
 				reader.Dispose();
-			if (compressedBuffer is not null)
-				ArrayPool<byte>.Shared.Return(compressedBuffer);
-			if (uncompressedBuffer is not null)
-				ArrayPool<byte>.Shared.Return(uncompressedBuffer);
+			if (compressionBuffer is not null)
+				ArrayPool<byte>.Shared.Return(compressionBuffer);
 		}
 	}
 
