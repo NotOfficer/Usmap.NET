@@ -66,8 +66,7 @@ public class Usmap
 					case EUsmapCompressionMethod.Brotli:
 					{
 						using var decoder = new BrotliDecoder();
-						var result = decoder.Decompress(compressedSpan, uncompressedMemory.Span, out var bytesConsumed,
-							out var bytesWritten);
+						var result = decoder.Decompress(compressedSpan, uncompressedMemory.Span, out var bytesConsumed, out var bytesWritten);
 						if (result != OperationStatus.Done)
 							throw new FileLoadException($"Invalid brotli .usmap decompress result: {result} | {bytesWritten} / {header.UncompressedSize} | {bytesConsumed} / {header.CompressedSize}");
 						break;
