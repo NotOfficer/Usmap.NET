@@ -7,19 +7,47 @@ using GenericReader;
 
 namespace UsmapDotNet;
 
+/// <summary/>
 public class Usmap
 {
+	/// <summary/>
 	public string[] Names { get; }
+	/// <summary/>
 	public UsmapEnum[] Enums { get; }
+	/// <summary/>
 	public UsmapSchema[] Schemas { get; }
 
+	/// <inheritdoc />
+	/// <param name="filePath">File path to parse from</param>
+	/// <param name="options">Options/Configuration to parse</param>
 	public Usmap(string filePath, UsmapOptions? options = null) : this(new GenericFileReader(filePath), options) { }
-	public Usmap(Stream fileStream, UsmapOptions? options = null) : this(new GenericStreamReader(fileStream), options) { }
+
+	/// <inheritdoc />
+	/// <param name="fileStream"><see cref="Stream"/> to parse from</param>
+	/// <param name="options">Options/Configuration to parse</param>
+	/// <param name="leaveOpen">Whether or not to leave the <paramref name="fileStream"/> open</param>
+	public Usmap(Stream fileStream, UsmapOptions? options = null, bool leaveOpen = false) : this(new GenericStreamReader(fileStream), options, leaveOpen) { }
+
+	/// <inheritdoc />
+	/// <param name="fileBuffer">File buffer to parse from</param>
+	/// <param name="options">Options/Configuration to parse</param>
 	public Usmap(byte[] fileBuffer, UsmapOptions? options = null) : this(new GenericBufferReader(fileBuffer), options) { }
 
-	public Usmap(IGenericReader usmapReader, UsmapOptions? options, bool disposeReader = true)
+	/// <inheritdoc />
+	/// <param name="fileMemory">File memory to parse from</param>
+	/// <param name="options">Options/Configuration to parse</param>
+	public Usmap(ReadOnlyMemory<byte> fileMemory, UsmapOptions? options = null) : this(new GenericBufferReader(fileMemory), options) { }
+
+	/// <summary>
+	/// Parses an usmap
+	/// </summary>
+	/// <param name="usmapReader">The reader used to parse</param>
+	/// <param name="options">Options/Configuration to parse</param>
+	/// <param name="leaveOpen">Whether or not to leave the <paramref name="usmapReader"/> open</param>
+	/// <exception cref="FileLoadException">Error while parsing</exception>
+	/// <exception cref="InvalidOperationException">Data is compressed and oodle instance was <see langword="null"/></exception>
+	public Usmap(IGenericReader usmapReader, UsmapOptions? options, bool leaveOpen = false)
 	{
-		IGenericReader? reader = null;
 		byte[]? compressionBuffer = null;
 
 		try
@@ -36,6 +64,7 @@ public class Usmap
 				throw new FileLoadException("There is not enough data in the .usmap file");
 
 			options ??= new UsmapOptions();
+			IGenericReader reader;
 
 			if (header.CompressionMethod == EUsmapCompressionMethod.None)
 			{
@@ -56,7 +85,7 @@ public class Usmap
 					case EUsmapCompressionMethod.Oodle:
 					{
 						if (options.Oodle is null)
-							throw new FileLoadException("Undefined oodle instance");
+							throw new InvalidOperationException("Data is compressed and oodle instance was null");
 
 						var result = (uint)options.Oodle.Decompress(compressedSpan, uncompressedMemory.Span);
 						if (result != header.UncompressedSize)
@@ -151,13 +180,14 @@ public class Usmap
 		}
 		finally
 		{
-			if (disposeReader && reader is not null)
-				reader.Dispose();
+			if (!leaveOpen)
+				usmapReader.Dispose();
 			if (compressionBuffer is not null)
 				ArrayPool<byte>.Shared.Return(compressionBuffer);
 		}
 	}
 
+	/// <inheritdoc />
 	public override string ToString()
 	{
 		return $"Schemas: {Schemas.Length} | Enums: {Enums.Length} | Names: {Names?.Length ?? 0}";

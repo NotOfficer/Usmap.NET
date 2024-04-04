@@ -1,10 +1,15 @@
 ﻿namespace UsmapDotNet;
 
+/// <summary/>
 public class UsmapProperty
 {
+	/// <summary/>
 	public string Name { get; }
+	/// <summary/>
 	public UsmapPropertyData Data { get; }
+	/// <summary/>
 	public ushort SchemaIdx { get; }
+	/// <summary/>
 	public byte ArraySize { get; }
 
 	internal UsmapProperty(string name, ushort schemaIdx, byte arraySize, UsmapPropertyData data)
@@ -15,6 +20,7 @@ public class UsmapProperty
 		Data = data;
 	}
 
+	/// <inheritdoc/>
 	public override string ToString()
 	{
 		return $"{Name} | {Data.Type}";

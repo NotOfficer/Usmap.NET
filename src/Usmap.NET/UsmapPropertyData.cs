@@ -2,12 +2,18 @@
 
 namespace UsmapDotNet;
 
+/// <summary/>
 public class UsmapPropertyData
 {
+	/// <summary/>
 	public EUsmapPropertyType Type { get; }
+	/// <summary/>
 	public string? EnumName { get; internal set; }
+	/// <summary/>
 	public string? StructType { get; internal set; }
+	/// <summary/>
 	public UsmapPropertyData? InnerType { get; internal set; }
+	/// <summary/>
 	public UsmapPropertyData? ValueType { get; internal set; }
 
 	internal UsmapPropertyData(EUsmapPropertyType type)
@@ -53,6 +59,7 @@ public class UsmapPropertyData
 		return data;
 	}
 
+	/// <inheritdoc />
 	public override string ToString()
 	{
 		return $"{Type.ToStringFast()} | {(StructType ?? EnumName ?? "?")}";
