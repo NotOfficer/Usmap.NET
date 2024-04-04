@@ -41,6 +41,7 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
@@ -50,6 +51,7 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
@@ -60,6 +62,7 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
@@ -69,6 +72,7 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
@@ -78,6 +82,7 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
@@ -88,6 +93,7 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
@@ -101,6 +107,7 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
@@ -114,6 +121,7 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
@@ -128,5 +136,6 @@ public class Tests
 		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
 		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
 		Assert.Equal(ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 }
