@@ -9,11 +9,13 @@ public enum EUsmapCompressionMethod : byte
 	Oodle,
 	/// <summary/>
 	Brotli,
+	/// <summary/>
+	ZStandard,
 	
 	/// <summary/>
 	MaxPlusOne,
 	/// <summary/>
 	Max = MaxPlusOne - 1,
 	/// <summary/>
-	Unknown = byte.MaxValue
+	Unknown = 0xFF
 }

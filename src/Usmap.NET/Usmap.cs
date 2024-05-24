@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Diagnostics;
 using System.IO.Compression;
 using System.Text;
 
@@ -10,6 +9,8 @@ namespace UsmapDotNet;
 /// <summary/>
 public class Usmap
 {
+	private const ushort MagicValue = 0x30C4;
+
 	/// <summary/>
 	public string[] Names { get; }
 	/// <summary/>
@@ -52,35 +53,51 @@ public class Usmap
 
 		try
 		{
-			var header = usmapReader.Read<UsmapHeader>();
-			if (header.Magic != UsmapHeader.MagicValue)
-				throw new FileLoadException("Invalid .usmap magic constant");
-			if (header.Version > EUsmapVersion.Initial)
-				throw new FileLoadException($"Invalid or unsupported .usmap version: {(int)header.Version}");
-			if (header.CompressionMethod > EUsmapCompressionMethod.Max)
-				throw new FileLoadException(
-					$"Invalid or unsupported .usmap compression: {(int)header.CompressionMethod}");
-			if (usmapReader.Length - usmapReader.Position < header.CompressedSize)
+			var magic = usmapReader.Read<ushort>();
+			if (magic != MagicValue)
+				throw new FileLoadException($"Invalid .usmap magic constant: 0x{magic:X4}, expected: 0x{MagicValue:X4}");
+			var version = usmapReader.Read<EUsmapVersion>();
+			if (version > EUsmapVersion.Latest)
+				throw new FileLoadException($"Invalid or unsupported .usmap version: {(int)version}");
+
+			var bHasVersioning = version >= EUsmapVersion.PackageVersioning && usmapReader.ReadBoolean();
+			if (bHasVersioning)
+			{
+				//usmapReader.Read<FPackageFileVersion>();
+				usmapReader.Position += sizeof(int) * 2;
+
+				//usmapReader.Read<FCustomVersionContainer>();
+				var versionsLength = usmapReader.Read<int>();
+				usmapReader.Position += versionsLength * (16 /* FGuid */ + sizeof(int));
+			}
+
+			var compressionMethod = usmapReader.Read<EUsmapCompressionMethod>();
+			var compressedSize = usmapReader.Read<uint>();
+			var uncompressedSize = usmapReader.Read<uint>();
+
+			if (compressionMethod > EUsmapCompressionMethod.Max)
+				throw new FileLoadException($"Invalid or unsupported .usmap compression: {(int)compressionMethod}");
+			if (usmapReader.Length - usmapReader.Position < compressedSize)
 				throw new FileLoadException("There is not enough data in the .usmap file");
 
 			options ??= new UsmapOptions();
 			IGenericReader reader;
 
-			if (header.CompressionMethod == EUsmapCompressionMethod.None)
+			if (compressionMethod == EUsmapCompressionMethod.None)
 			{
-				if (header.CompressedSize != header.UncompressedSize)
+				if (compressedSize != uncompressedSize)
 					throw new FileLoadException("No .usmap compression: Compression size must be equal to decompression size");
 
 				reader = usmapReader;
 			}
 			else
 			{
-				compressionBuffer = ArrayPool<byte>.Shared.Rent((int)(header.CompressedSize + header.UncompressedSize));
-				var compressedSpan = new Span<byte>(compressionBuffer, 0, (int)header.CompressedSize);
+				compressionBuffer = ArrayPool<byte>.Shared.Rent((int)(compressedSize + uncompressedSize));
+				var compressedSpan = new Span<byte>(compressionBuffer, 0, (int)compressedSize);
 				usmapReader.Read(compressedSpan);
-				var uncompressedMemory = new Memory<byte>(compressionBuffer, (int)header.CompressedSize, (int)header.UncompressedSize);
+				var uncompressedMemory = new Memory<byte>(compressionBuffer, (int)compressedSize, (int)uncompressedSize);
 
-				switch (header.CompressionMethod)
+				switch (compressionMethod)
 				{
 					case EUsmapCompressionMethod.Oodle:
 					{
@@ -88,8 +105,8 @@ public class Usmap
 							throw new InvalidOperationException("Data is compressed and oodle instance was null");
 
 						var result = (uint)options.Oodle.Decompress(compressedSpan, uncompressedMemory.Span);
-						if (result != header.UncompressedSize)
-							throw new FileLoadException($"Invalid oodle .usmap decompress result: {result} / {header.UncompressedSize}");
+						if (result != uncompressedSize)
+							throw new FileLoadException($"Invalid oodle .usmap decompress result: {result} / {uncompressedSize}");
 						break;
 					}
 					case EUsmapCompressionMethod.Brotli:
@@ -97,11 +114,15 @@ public class Usmap
 						using var decoder = new BrotliDecoder();
 						var result = decoder.Decompress(compressedSpan, uncompressedMemory.Span, out var bytesConsumed, out var bytesWritten);
 						if (result != OperationStatus.Done)
-							throw new FileLoadException($"Invalid brotli .usmap decompress result: {result} | {bytesWritten} / {header.UncompressedSize} | {bytesConsumed} / {header.CompressedSize}");
+							throw new FileLoadException($"Invalid brotli .usmap decompress result: {result} | {bytesWritten} / {uncompressedSize} | {bytesConsumed} / {compressedSize}");
 						break;
 					}
+					case EUsmapCompressionMethod.ZStandard:
+					{
+						throw new FileLoadException($"Unsupported .usmap compression: {(int)EUsmapCompressionMethod.ZStandard} (Zstandard)");
+					}
 					default:
-						throw new UnreachableException();
+						throw new FileLoadException($"Invalid or unsupported .usmap compression: {(int)compressionMethod}");
 				}
 
 				reader = new GenericBufferReader(uncompressedMemory);
@@ -115,8 +136,10 @@ public class Usmap
 
 				for (var i = 0; i < size; ++i)
 				{
-					var nameSize = reader.Read<byte>();
-					var name = reader.ReadString(nameSize, Encoding.UTF8);
+					var nameLength = (int)(version >= EUsmapVersion.LongFName
+						? reader.Read<ushort>()
+						: reader.Read<byte>());
+					var name = reader.ReadString(nameLength, Encoding.UTF8);
 					names[i] = name;
 				}
 			}
@@ -128,7 +151,10 @@ public class Usmap
 				for (var i = 0; i < size; ++i)
 				{
 					var idx = reader.Read<uint>();
-					var enumNamesSize = reader.Read<byte>();
+					var enumName = names[idx];
+					var enumNamesSize = (int)(version >= EUsmapVersion.LargeEnums
+						? reader.Read<ushort>()
+						: reader.Read<byte>());
 					var enumNames = new string[enumNamesSize];
 
 					for (var j = 0; j < enumNamesSize; ++j)
@@ -137,7 +163,7 @@ public class Usmap
 						enumNames[j] = names[nameIdx];
 					}
 
-					Enums[i] = new UsmapEnum(names[idx], enumNames);
+					Enums[i] = new UsmapEnum(enumName, enumNames);
 				}
 			}
 
@@ -148,7 +174,11 @@ public class Usmap
 				for (var i = 0; i < size; ++i)
 				{
 					var idx = reader.Read<uint>();
+					var schemaName = names[idx];
 					var superIdx = reader.Read<uint>();
+					var schemaSuperType = superIdx == uint.MaxValue
+						? null
+						: names[superIdx];
 					var propCount = reader.Read<ushort>();
 
 					var serializablePropCount = reader.Read<ushort>();
@@ -172,7 +202,7 @@ public class Usmap
 						}
 					}
 
-					Schemas[i] = new UsmapSchema(names[idx], superIdx == uint.MaxValue ? null : names[superIdx], propCount, props);
+					Schemas[i] = new UsmapSchema(schemaName, schemaSuperType, propCount, props);
 				}
 			}
 
