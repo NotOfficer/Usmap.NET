@@ -76,30 +76,30 @@ public class UncompressedTests : IUsmapTest
 	[Fact]
 	public void ParseFromFile()
 	{
-		var usmap = new Usmap(FilePath);
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(FilePath);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromStream()
 	{
-		var usmap = new Usmap(File.OpenRead(FilePath));
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.OpenRead(FilePath));
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromBuffer()
 	{
-		var usmap = new Usmap(File.ReadAllBytes(FilePath));
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.ReadAllBytes(FilePath));
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 }
@@ -111,30 +111,30 @@ public class UncompressedV3Tests : IUsmapTest
 	[Fact]
 	public void ParseFromFile()
 	{
-		var usmap = new Usmap(FilePath);
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(FilePath);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromStream()
 	{
-		var usmap = new Usmap(File.OpenRead(FilePath));
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.OpenRead(FilePath));
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromBuffer()
 	{
-		var usmap = new Usmap(File.ReadAllBytes(FilePath));
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.ReadAllBytes(FilePath));
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 }
@@ -146,30 +146,30 @@ public class BrotliCompressedTests : IUsmapTest
 	[Fact]
 	public void ParseFromFile()
 	{
-		var usmap = new Usmap(FilePath);
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(FilePath);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromStream()
 	{
-		var usmap = new Usmap(File.OpenRead(FilePath));
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.OpenRead(FilePath));
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromBuffer()
 	{
-		var usmap = new Usmap(File.ReadAllBytes(FilePath));
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.ReadAllBytes(FilePath));
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 }
@@ -181,30 +181,30 @@ public class BrotliCompressedV3Tests : IUsmapTest
 	[Fact]
 	public void ParseFromFile()
 	{
-		var usmap = new Usmap(FilePath);
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(FilePath);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromStream()
 	{
-		var usmap = new Usmap(File.OpenRead(FilePath));
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.OpenRead(FilePath));
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromBuffer()
 	{
-		var usmap = new Usmap(File.ReadAllBytes(FilePath));
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.ReadAllBytes(FilePath));
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 }
@@ -227,30 +227,30 @@ public class OodleCompressedTests : IUsmapTest, IAsyncLifetime
 	[Fact]
 	public void ParseFromFile()
 	{
-		var usmap = new Usmap(FilePath, _options);
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(FilePath, _options);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromStream()
 	{
-		var usmap = new Usmap(File.OpenRead(FilePath), _options);
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.OpenRead(FilePath), _options);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromBuffer()
 	{
-		var usmap = new Usmap(File.ReadAllBytes(FilePath), _options);
-		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.ReadAllBytes(FilePath), _options);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
@@ -280,30 +280,30 @@ public class OodleCompressedV3Tests : IUsmapTest, IAsyncLifetime
 	[Fact]
 	public void ParseFromFile()
 	{
-		var usmap = new Usmap(FilePath, _options);
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(FilePath, _options);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromStream()
 	{
-		var usmap = new Usmap(File.OpenRead(FilePath), _options);
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.OpenRead(FilePath), _options);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
 	public void ParseFromBuffer()
 	{
-		var usmap = new Usmap(File.ReadAllBytes(FilePath), _options);
-		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		var usmap = Usmap.Parse(File.ReadAllBytes(FilePath), _options);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 

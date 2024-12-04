@@ -1,7 +1,7 @@
 ﻿namespace UsmapDotNet;
 
 /// <summary/>
-public class UsmapSchema
+public sealed class UsmapSchema
 {
 	/// <summary/>
 	public string Name { get; }
@@ -10,7 +10,7 @@ public class UsmapSchema
 	/// <summary/>
 	public ushort PropCount { get; }
 	/// <summary/>
-	public UsmapProperty[] Properties { get; }
+	public IReadOnlyList<UsmapProperty> Properties { get; }
 
 	internal UsmapSchema(string name, string? superType, ushort propCount, UsmapProperty[] properties)
 	{
@@ -23,6 +23,6 @@ public class UsmapSchema
 	/// <inheritdoc />
 	public override string ToString()
 	{
-		return $"{Name}{(SuperType == null ? null : $":{SuperType}")} | {Properties.Length} ({PropCount})";
+		return $"{Name}{(SuperType is null ? null : $":{SuperType}")} | {Properties.Count} ({PropCount})";
 	}
 }

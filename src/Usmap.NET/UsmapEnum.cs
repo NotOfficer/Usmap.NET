@@ -1,12 +1,12 @@
 ﻿namespace UsmapDotNet;
 
 /// <summary/>
-public class UsmapEnum
+public sealed class UsmapEnum
 {
 	/// <summary/>
 	public string Name { get; }
 	/// <summary/>
-	public string[] Names { get; }
+	public IReadOnlyList<string> Names { get; }
 
 	internal UsmapEnum(string name, string[] names)
 	{
@@ -17,6 +17,6 @@ public class UsmapEnum
 	/// <inheritdoc />
 	public override string ToString()
 	{
-		return $"{Name} | {Names.Length}";
+		return $"{Name} | {Names.Count}";
 	}
 }

@@ -1,7 +1,7 @@
 ﻿namespace UsmapDotNet;
 
 /// <summary/>
-public class UsmapProperty
+public sealed class UsmapProperty
 {
 	/// <summary/>
 	public string Name { get; }

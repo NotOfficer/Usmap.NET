@@ -3,7 +3,7 @@
 namespace UsmapDotNet;
 
 /// <summary/>
-public class UsmapPropertyData
+public sealed class UsmapPropertyData
 {
 	/// <summary/>
 	public EUsmapPropertyType Type { get; }
@@ -21,7 +21,11 @@ public class UsmapPropertyData
 		Type = type;
 	}
 
-	internal static UsmapPropertyData Deserialize(IGenericReader reader, string[] names)
+	internal static UsmapPropertyData Deserialize<TReader>(ref TReader reader, string[] names)
+		where TReader : IGenericReader
+#if NET9_0_OR_GREATER
+		, allows ref struct
+#endif
 	{
 		var propType = reader.Read<EUsmapPropertyType>();
 		var data = new UsmapPropertyData(propType);
@@ -30,7 +34,7 @@ public class UsmapPropertyData
 		{
 			case EUsmapPropertyType.EnumProperty:
 			{
-				data.InnerType = Deserialize(reader, names);
+				data.InnerType = Deserialize(ref reader, names);
 				var idx = reader.Read<uint>();
 				data.EnumName = names[idx];
 				break;
@@ -45,13 +49,13 @@ public class UsmapPropertyData
 			case EUsmapPropertyType.ArrayProperty:
 			case EUsmapPropertyType.OptionalProperty:
 			{
-				data.InnerType = Deserialize(reader, names);
+				data.InnerType = Deserialize(ref reader, names);
 				break;
 			}
 			case EUsmapPropertyType.MapProperty:
 			{
-				data.InnerType = Deserialize(reader, names);
-				data.ValueType = Deserialize(reader, names);
+				data.InnerType = Deserialize(ref reader, names);
+				data.ValueType = Deserialize(ref reader, names);
 				break;
 			}
 		}
@@ -62,6 +66,6 @@ public class UsmapPropertyData
 	/// <inheritdoc />
 	public override string ToString()
 	{
-		return $"{Type.ToStringFast()} | {(StructType ?? EnumName ?? "?")}";
+		return $"{Type.ToStringFast()} | {StructType ?? EnumName ?? "?"}";
 	}
 }
