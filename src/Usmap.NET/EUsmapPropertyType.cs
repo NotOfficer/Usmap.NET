@@ -64,6 +64,10 @@ public enum EUsmapPropertyType : byte
 	FieldPathProperty,
 	/// <summary/>
 	OptionalProperty,
+	/// <summary/>
+	Utf8StrProperty,
+	/// <summary/>
+	AnsiStrProperty,
 	
 	/// <summary/>
 	Unknown = byte.MaxValue
