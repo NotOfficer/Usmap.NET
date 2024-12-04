@@ -1,261 +1,316 @@
-using System;
-using System.IO;
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Net;
 
 using OodleDotNet;
 
-using Xunit;
-
 namespace UsmapDotNet.Tests;
 
-public class Tests
+public static class Constants
 {
-	private static readonly Oodle OodleInstance = new(Path.Combine(
-		Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-		@"Libraries\oo2core_9_win64.dll"));
+	public const int ExpectedSchemas = 28697;
+	public const int ExpectedEnums = 4391;
+	public const int ExpectedNames = 141495;
 
-	/*private const int ExpectedSchemas = 13890;
-	private const int ExpectedEnums = 2367;
-	private const int ExpectedNames = 74908;*/
+	public const int ExpectedSchemasV3 = 29520;
+	public const int ExpectedEnumsV3 = 4484;
+	public const int ExpectedNamesV3 = 144915;
 
-	private const int ExpectedSchemas = 28697;
-	private const int ExpectedEnums = 4391;
-	private const int ExpectedNames = 141495;
-
-	private const int ExpectedSchemasV3 = 29520;
-	private const int ExpectedEnumsV3 = 4484;
-	private const int ExpectedNamesV3 = 144915;
-
-	private readonly string _uncompressedUsmapPath;
-	private readonly string _brotliCompressedUsmapPath;
-	private readonly string _oodleCompressedUsmapPath;
-
-	private readonly string _uncompressedUsmapV3Path;
-	private readonly string _brotliCompressedUsmapV3Path;
-	private readonly string _oodleCompressedUsmapV3Path;
-
-	public Tests()
+	public static async Task<string> DownloadOodleAsync()
 	{
-		var currentDir = Directory.GetCurrentDirectory();
-		var testFilesDir = Path.Combine(currentDir, "TestFiles");
-
-		_uncompressedUsmapPath = Path.Combine(testFilesDir, "xx1.usmap");
-		_brotliCompressedUsmapPath = Path.Combine(testFilesDir, "br1.usmap");
-		_oodleCompressedUsmapPath = Path.Combine(testFilesDir, "oo1.usmap");
-
-		_uncompressedUsmapV3Path = Path.Combine(testFilesDir, "xx2.usmap");
-		_brotliCompressedUsmapV3Path = Path.Combine(testFilesDir, "br2.usmap");
-		_oodleCompressedUsmapV3Path = Path.Combine(testFilesDir, "oo2.usmap");
-	}
-
-	[Fact]
-	public void ParseUncompressedFromFile()
-	{
-		var usmap = new Usmap(_uncompressedUsmapPath);
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseUncompressedFromStream()
-	{
-		var usmap = new Usmap(File.OpenRead(_uncompressedUsmapPath));
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseUncompressedFromBuffer()
-	{
-		var buffer = File.ReadAllBytes(_uncompressedUsmapPath);
-		var usmap = new Usmap(buffer);
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseBrotliCompressedFromFile()
-	{
-		var usmap = new Usmap(_brotliCompressedUsmapPath);
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseBrotliCompressedFromStream()
-	{
-		var usmap = new Usmap(File.OpenRead(_brotliCompressedUsmapPath));
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseBrotliCompressedFromBuffer()
-	{
-		var buffer = File.ReadAllBytes(_brotliCompressedUsmapPath);
-		var usmap = new Usmap(buffer);
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseOodleCompressedFromFile()
-	{
-		var options = new UsmapOptions
+		if (!OperatingSystem.IsWindows() && !OperatingSystem.IsLinux())
 		{
-			Oodle = OodleInstance
-		};
-		var usmap = new Usmap(_oodleCompressedUsmapPath, options);
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
+			throw new PlatformNotSupportedException("this test is not supported on the current platform");
+		}
 
-	[Fact]
-	public void ParseOodleCompressedFromStream()
-	{
-		var options = new UsmapOptions
+		const string baseUrl = "https://github.com/WorkingRobot/OodleUE/releases/download/2024-11-01-726/"; // 2.9.13
+		string url;
+		string entryName;
+
+		if (OperatingSystem.IsWindows())
 		{
-			Oodle = OodleInstance
-		};
-		var usmap = new Usmap(File.OpenRead(_oodleCompressedUsmapPath), options);
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseOodleCompressedFromBuffer()
-	{
-		var buffer = File.ReadAllBytes(_oodleCompressedUsmapPath);
-		var options = new UsmapOptions
+			url = baseUrl + "msvc.zip";
+			entryName = "bin/Release/oodle-data-shared.dll";
+		}
+		else if (OperatingSystem.IsLinux())
 		{
-			Oodle = OodleInstance
-		};
-		var usmap = new Usmap(buffer, options);
-		Assert.Equal(ExpectedSchemas, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnums, usmap.Enums.Length);
-		Assert.Equal(ExpectedNames, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	// v3
-
-	[Fact]
-	public void ParseUncompressedV3FromFile()
-	{
-		var usmap = new Usmap(_uncompressedUsmapV3Path);
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseUncompressedV3FromStream()
-	{
-		var usmap = new Usmap(File.OpenRead(_uncompressedUsmapV3Path));
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseUncompressedV3FromBuffer()
-	{
-		var buffer = File.ReadAllBytes(_uncompressedUsmapV3Path);
-		var usmap = new Usmap(buffer);
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseBrotliCompressedV3FromFile()
-	{
-		var usmap = new Usmap(_brotliCompressedUsmapV3Path);
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseBrotliCompressedV3FromStream()
-	{
-		var usmap = new Usmap(File.OpenRead(_brotliCompressedUsmapV3Path));
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseBrotliCompressedV3FromBuffer()
-	{
-		var buffer = File.ReadAllBytes(_brotliCompressedUsmapV3Path);
-		var usmap = new Usmap(buffer);
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
-		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
-	}
-
-	[Fact]
-	public void ParseOodleCompressedV3FromFile()
-	{
-		var options = new UsmapOptions
+			url = baseUrl + "gcc.zip";
+			entryName = "lib/Release/liboodle-data-shared.so";
+		}
+		else
 		{
-			Oodle = OodleInstance
-		};
-		var usmap = new Usmap(_oodleCompressedUsmapV3Path, options);
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
+			throw new UnreachableException();
+		}
+
+		using var client = new HttpClient(new SocketsHttpHandler
+		{
+			UseProxy = false,
+			UseCookies = true,
+			AutomaticDecompression = DecompressionMethods.All
+		});
+		using var response = await client.GetAsync(url);
+		response.EnsureSuccessStatusCode();
+		await using var responseStream = await response.Content.ReadAsStreamAsync();
+		using var zip = new ZipArchive(responseStream, ZipArchiveMode.Read);
+		var entry = zip.GetEntry(entryName);
+		ArgumentNullException.ThrowIfNull(entry, "oodle entry in zip not found");
+		await using var entryStream = entry.Open();
+		var filePath = Path.GetTempFileName();
+		await using var fs = File.Create(filePath);
+		await entryStream.CopyToAsync(fs);
+		return filePath;
+	}
+}
+
+public interface IUsmapTest
+{
+	void ParseFromFile();
+	void ParseFromStream();
+	void ParseFromBuffer();
+}
+
+public class UncompressedTests : IUsmapTest
+{
+	private const string FilePath = "files/xx1.usmap";
+
+	[Fact]
+	public void ParseFromFile()
+	{
+		var usmap = new Usmap(FilePath);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
-	public void ParseOodleCompressedV3FromStream()
+	public void ParseFromStream()
 	{
-		var options = new UsmapOptions
-		{
-			Oodle = OodleInstance
-		};
-		var usmap = new Usmap(File.OpenRead(_oodleCompressedUsmapV3Path), options);
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
+		var usmap = new Usmap(File.OpenRead(FilePath));
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
 	[Fact]
-	public void ParseOodleCompressedV3FromBuffer()
+	public void ParseFromBuffer()
 	{
-		var buffer = File.ReadAllBytes(_oodleCompressedUsmapV3Path);
-		var options = new UsmapOptions
-		{
-			Oodle = OodleInstance
-		};
-		var usmap = new Usmap(buffer, options);
-		Assert.Equal(ExpectedSchemasV3, usmap.Schemas.Length);
-		Assert.Equal(ExpectedEnumsV3, usmap.Enums.Length);
-		Assert.Equal(ExpectedNamesV3, usmap.Names.Length);
+		var usmap = new Usmap(File.ReadAllBytes(FilePath));
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+}
+
+public class UncompressedV3Tests : IUsmapTest
+{
+	private const string FilePath = "files/xx2.usmap";
+
+	[Fact]
+	public void ParseFromFile()
+	{
+		var usmap = new Usmap(FilePath);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromStream()
+	{
+		var usmap = new Usmap(File.OpenRead(FilePath));
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromBuffer()
+	{
+		var usmap = new Usmap(File.ReadAllBytes(FilePath));
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+}
+
+public class BrotliCompressedTests : IUsmapTest
+{
+	private const string FilePath = "files/br1.usmap";
+
+	[Fact]
+	public void ParseFromFile()
+	{
+		var usmap = new Usmap(FilePath);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromStream()
+	{
+		var usmap = new Usmap(File.OpenRead(FilePath));
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromBuffer()
+	{
+		var usmap = new Usmap(File.ReadAllBytes(FilePath));
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+}
+
+public class BrotliCompressedV3Tests : IUsmapTest
+{
+	private const string FilePath = "files/br2.usmap";
+
+	[Fact]
+	public void ParseFromFile()
+	{
+		var usmap = new Usmap(FilePath);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromStream()
+	{
+		var usmap = new Usmap(File.OpenRead(FilePath));
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromBuffer()
+	{
+		var usmap = new Usmap(File.ReadAllBytes(FilePath));
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+}
+
+public class OodleCompressedTests : IUsmapTest, IAsyncLifetime
+{
+	private const string FilePath = "files/oo1.usmap";
+
+	private string _oodleFilePath = null!;
+	private Oodle _oodle = null!;
+	private UsmapOptions _options = null!;
+
+	public async Task InitializeAsync()
+	{
+		_oodleFilePath = await Constants.DownloadOodleAsync();
+		_oodle = new Oodle(_oodleFilePath);
+		_options = new UsmapOptions { Oodle = _oodle };
+	}
+
+	[Fact]
+	public void ParseFromFile()
+	{
+		var usmap = new Usmap(FilePath, _options);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromStream()
+	{
+		var usmap = new Usmap(File.OpenRead(FilePath), _options);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromBuffer()
+	{
+		var usmap = new Usmap(File.ReadAllBytes(FilePath), _options);
+		Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNames, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	public Task DisposeAsync()
+	{
+		_oodle.Dispose();
+		File.Delete(_oodleFilePath);
+		return Task.CompletedTask;
+	}
+}
+
+public class OodleCompressedV3Tests : IUsmapTest, IAsyncLifetime
+{
+	private const string FilePath = "files/oo2.usmap";
+
+	private string _oodleFilePath = null!;
+	private Oodle _oodle = null!;
+	private UsmapOptions _options = null!;
+
+	public async Task InitializeAsync()
+	{
+		_oodleFilePath = await Constants.DownloadOodleAsync();
+		_oodle = new Oodle(_oodleFilePath);
+		_options = new UsmapOptions { Oodle = _oodle };
+	}
+
+	[Fact]
+	public void ParseFromFile()
+	{
+		var usmap = new Usmap(FilePath, _options);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromStream()
+	{
+		var usmap = new Usmap(File.OpenRead(FilePath), _options);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromBuffer()
+	{
+		var usmap = new Usmap(File.ReadAllBytes(FilePath), _options);
+		Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Length);
+		Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Length);
+		Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Length);
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	public Task DisposeAsync()
+	{
+		_oodle.Dispose();
+		File.Delete(_oodleFilePath);
+		return Task.CompletedTask;
 	}
 }
