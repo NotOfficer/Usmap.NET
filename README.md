@@ -13,7 +13,7 @@ A .NET parser for .usmap files
 ```cs
 using UsmapDotNet;
 
-var usmap = new Usmap(@"C:\Test\Example.usmap", new UsmapOptions
+var usmap = Usmap.Parse("C:/Test/Example.usmap", new UsmapOptions
 {
     //Oodle = oodleInstance,
     SaveNames = false
