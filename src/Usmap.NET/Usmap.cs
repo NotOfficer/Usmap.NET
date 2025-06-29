@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Text;
 
 using GenericReader;
+using ZstdSharp;
 
 using Microsoft.Win32.SafeHandles;
 
@@ -169,7 +170,8 @@ public sealed class Usmap
 					}
 					case EUsmapCompressionMethod.ZStandard:
 					{
-						throw new FileLoadException($"Unsupported .usmap compression: {(int)EUsmapCompressionMethod.ZStandard} (Zstandard)");
+						var decompressor = new Decompressor();
+						uncompressedData = decompressor.Unwrap(compressedSpan, uncompressedSize).ToArray();
 					}
 					default:
 						throw new UnreachableException();
