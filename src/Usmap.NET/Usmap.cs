@@ -171,7 +171,7 @@ public sealed class Usmap
 					case EUsmapCompressionMethod.ZStandard:
 					{
 						using var decompressor = new Decompressor();
-						var result = decompressor.Unwrap(compressedSpan, uncompressedData
+						decompressor.Unwrap(compressedSpan, uncompressedData
 #if !NET9_0_OR_GREATER
             .Span
 #endif
