@@ -170,8 +170,13 @@ public sealed class Usmap
 					}
 					case EUsmapCompressionMethod.ZStandard:
 					{
-						var decompressor = new Decompressor();
-						uncompressedData = decompressor.Unwrap(compressedSpan, uncompressedSize).ToArray();
+						using var decompressor = new Decompressor();
+						var result = decompressor.Unwrap(compressedSpan, uncompressedData
+#if !NET9_0_OR_GREATER
+            .Span
+#endif
+						);
+						break;
 					}
 					default:
 						throw new UnreachableException();
