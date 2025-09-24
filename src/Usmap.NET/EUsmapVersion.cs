@@ -17,10 +17,10 @@ public enum EUsmapVersion : byte
 	/// Adds support for enums with more than 255 values
 	/// </summary>
 	LargeEnums,
-	/// <summary>
-	/// Adds support for <see cref="EUsmapPropertyType.Utf8StrProperty"/> and <see cref="EUsmapPropertyType.AnsiStrProperty"/>
-	/// </summary>
-	Utf8AndAnsiStrProps,
+    /// <summary>
+    /// Adds support for explicit enum values
+    /// </summary>
+	ExplicitEnumValues,
 
 	/// <summary/>
 	LatestPlusOne,
