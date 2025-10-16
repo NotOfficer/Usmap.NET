@@ -154,6 +154,7 @@ public sealed class Usmap
 
 						if (result != uncompressedSize)
 							throw new FileLoadException($"Invalid oodle .usmap data decompress result: {result} / {uncompressedSize}");
+
 						break;
 					}
 					case EUsmapCompressionMethod.Brotli:
