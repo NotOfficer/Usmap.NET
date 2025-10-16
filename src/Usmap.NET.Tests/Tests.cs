@@ -314,3 +314,35 @@ public class OodleCompressedV3Tests : IUsmapTest, IAsyncLifetime
 		return Task.CompletedTask;
 	}
 }
+
+public class ZstandardCompressedTests : IUsmapTest
+{
+	private const string FilePath = "files/zs1.usmap";
+
+	[Fact]
+	public void ParseFromFile()
+	{
+		var usmap = Usmap.Parse(FilePath);
+		Assert.All(usmap.Enums, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.All(usmap.Schemas, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromStream()
+	{
+		var usmap = Usmap.Parse(File.OpenRead(FilePath));
+		Assert.All(usmap.Enums, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.All(usmap.Schemas, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+
+	[Fact]
+	public void ParseFromBuffer()
+	{
+		var usmap = Usmap.Parse(File.ReadAllBytes(FilePath));
+		Assert.All(usmap.Enums, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.All(usmap.Schemas, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
+	}
+}

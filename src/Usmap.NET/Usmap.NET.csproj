@@ -29,6 +29,7 @@
     <PackageReference Include="GenericReader" />
     <PackageReference Include="NetEscapades.EnumGenerators" PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="Oodle.NET" />
+    <PackageReference Include="ZstdSharp.Port" />
   </ItemGroup>
 
 </Project>
