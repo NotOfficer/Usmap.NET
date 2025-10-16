@@ -59,7 +59,7 @@ public static class Constants
         var entry = zip.GetEntry(entryName);
         ArgumentNullException.ThrowIfNull(entry, "oodle entry in zip not found");
         await using var entryStream = entry.Open();
-        var filePath = Path.GetTempFileName();
+        string filePath = Path.GetTempFileName();
         await using var fs = File.Create(filePath);
         await entryStream.CopyToAsync(fs);
         return filePath;

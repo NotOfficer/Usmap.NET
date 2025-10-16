@@ -27,7 +27,7 @@ public sealed class UsmapPropertyData
         , allows ref struct
 #endif
     {
-        var propType = reader.Read<EUsmapPropertyType>();
+        EUsmapPropertyType propType = reader.Read<EUsmapPropertyType>();
         var data = new UsmapPropertyData(propType);
 
         switch (propType)
@@ -35,13 +35,13 @@ public sealed class UsmapPropertyData
             case EUsmapPropertyType.EnumProperty:
             {
                 data.InnerType = Deserialize(ref reader, names);
-                var idx = reader.Read<uint>();
+                uint idx = reader.Read<uint>();
                 data.EnumName = names[idx];
                 break;
             }
             case EUsmapPropertyType.StructProperty:
             {
-                var idx = reader.Read<uint>();
+                uint idx = reader.Read<uint>();
                 data.StructType = names[idx];
                 break;
             }
