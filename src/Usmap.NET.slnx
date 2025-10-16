@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="Usmap.NET.Tests/Usmap.NET.Tests.csproj" />
+  <Project Path="Usmap.NET/Usmap.NET.csproj" />
+</Solution>
