@@ -16,6 +16,10 @@ public static class Constants
 	public const int ExpectedEnumsV3 = 4484;
 	public const int ExpectedNamesV3 = 144915;
 
+	public const int ExpectedSchemasV4 = 47836;
+	public const int ExpectedEnumsV4 = 6478;
+	public const int ExpectedNamesV4 = 192297;
+
 	public static async Task<string> DownloadOodleAsync()
 	{
 		if (!OperatingSystem.IsWindows() && !OperatingSystem.IsLinux())
@@ -315,7 +319,7 @@ public class OodleCompressedV3Tests : IUsmapTest, IAsyncLifetime
 	}
 }
 
-public class ZstandardCompressedTests : IUsmapTest
+public class ZstandardCompressedV4Tests : IUsmapTest
 {
 	private const string FilePath = "files/zs1.usmap";
 
@@ -323,8 +327,9 @@ public class ZstandardCompressedTests : IUsmapTest
 	public void ParseFromFile()
 	{
 		var usmap = Usmap.Parse(FilePath);
-		Assert.All(usmap.Enums, x => Assert.False(string.IsNullOrEmpty(x.Name)));
-		Assert.All(usmap.Schemas, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.Equal(Constants.ExpectedSchemasV4, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV4, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV4, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
@@ -332,8 +337,9 @@ public class ZstandardCompressedTests : IUsmapTest
 	public void ParseFromStream()
 	{
 		var usmap = Usmap.Parse(File.OpenRead(FilePath));
-		Assert.All(usmap.Enums, x => Assert.False(string.IsNullOrEmpty(x.Name)));
-		Assert.All(usmap.Schemas, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.Equal(Constants.ExpectedSchemasV4, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV4, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV4, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 
@@ -341,8 +347,9 @@ public class ZstandardCompressedTests : IUsmapTest
 	public void ParseFromBuffer()
 	{
 		var usmap = Usmap.Parse(File.ReadAllBytes(FilePath));
-		Assert.All(usmap.Enums, x => Assert.False(string.IsNullOrEmpty(x.Name)));
-		Assert.All(usmap.Schemas, x => Assert.False(string.IsNullOrEmpty(x.Name)));
+		Assert.Equal(Constants.ExpectedSchemasV4, usmap.Schemas.Count);
+		Assert.Equal(Constants.ExpectedEnumsV4, usmap.Enums.Count);
+		Assert.Equal(Constants.ExpectedNamesV4, usmap.Names.Count);
 		Assert.All(usmap.Names, x => Assert.False(string.IsNullOrEmpty(x)));
 	}
 }

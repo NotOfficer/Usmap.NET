@@ -126,13 +126,14 @@ public sealed class Usmap
 			options ??= new UsmapOptions();
 			var longFName = version >= EUsmapVersion.LongFName;
 			var largeEnums = version >= EUsmapVersion.LargeEnums;
+			var explicitEnumValues = version >= EUsmapVersion.ExplicitEnumValues;
 
 			if (compressionMethod == EUsmapCompressionMethod.None)
 			{
 				if (compressedSize != uncompressedSize)
 					throw new FileLoadException("No .usmap compression: Compression size must be equal to decompression size");
 
-				return ParseInternal(ref usmapReader, options, longFName, largeEnums);
+				return ParseInternal(ref usmapReader, options, longFName, largeEnums, explicitEnumValues);
 			}
 			else
 			{
@@ -191,7 +192,7 @@ public sealed class Usmap
 				}
 
 				var reader = new UsmapReader(uncompressedData);
-				return ParseInternal(ref reader, options, longFName, largeEnums);
+				return ParseInternal(ref reader, options, longFName, largeEnums, explicitEnumValues);
 			}
 		}
 		finally
@@ -203,7 +204,7 @@ public sealed class Usmap
 		}
 	}
 
-	private static Usmap ParseInternal<TReader>(ref TReader reader, UsmapOptions options, bool longFName, bool largeEnums)
+	private static Usmap ParseInternal<TReader>(ref TReader reader, UsmapOptions options, bool longFName, bool largeEnums, bool explicitEnumValues)
 		where TReader : IGenericReader
 #if NET9_0_OR_GREATER
 		, allows ref struct
@@ -235,18 +236,22 @@ public sealed class Usmap
 			{
 				var idx = reader.Read<uint>();
 				var enumName = names[idx];
-				var enumNamesSize = (int)(largeEnums
+				var enumMembersSize = (int)(largeEnums
 					? reader.Read<ushort>()
 					: reader.Read<byte>());
-				var enumNames = new string[enumNamesSize];
+				var enumMembers = new UsmapEnumMember[enumMembersSize];
 
-				for (var j = 0; j < enumNamesSize; ++j)
+				for (var j = 0; j < enumMembersSize; ++j)
 				{
-					var nameIdx = reader.Read<uint>();
-					enumNames[j] = names[nameIdx];
+					var memberValue = explicitEnumValues
+						? reader.Read<long>()
+						: j;
+					var memberNameIdx = reader.Read<uint>();
+					var memberName = names[memberNameIdx];
+					enumMembers[j] = new UsmapEnumMember(memberName, memberValue);
 				}
 
-				enums[i] = new UsmapEnum(enumName, enumNames);
+				enums[i] = new UsmapEnum(enumName, enumMembers);
 			}
 		}
 

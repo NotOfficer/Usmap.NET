@@ -17,6 +17,10 @@ public enum EUsmapVersion : byte
 	/// Adds support for enums with more than 255 values
 	/// </summary>
 	LargeEnums,
+	/// <summary>
+	/// Adds support for explicit enum values
+	/// </summary>
+	ExplicitEnumValues,
 
 	/// <summary/>
 	LatestPlusOne,
