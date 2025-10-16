@@ -144,28 +144,29 @@ public sealed class Usmap
 					case EUsmapCompressionMethod.Oodle:
 					{
 						if (options.Oodle is null)
-							throw new InvalidOperationException("Data is compressed and oodle instance was null");
+							throw new InvalidOperationException(".usmap data is compressed and oodle instance was null");
 
-						var result = (uint)options.Oodle.Decompress(compressedSpan, uncompressedData
+						var result = (int)options.Oodle.Decompress(compressedSpan, uncompressedData
 #if !NET9_0_OR_GREATER
 							.Span
 #endif
 						);
 
 						if (result != uncompressedSize)
-							throw new FileLoadException($"Invalid oodle .usmap decompress result: {result} / {uncompressedSize}");
+							throw new FileLoadException($"Invalid oodle .usmap data decompress result: {result} / {uncompressedSize}");
 						break;
 					}
 					case EUsmapCompressionMethod.Brotli:
 					{
-						using var decoder = new BrotliDecoder();
-						var result = decoder.Decompress(compressedSpan, uncompressedData
+						if (!BrotliDecoder.TryDecompress(compressedSpan, uncompressedData
 #if !NET9_0_OR_GREATER
 							.Span
 #endif
-							, out var bytesConsumed, out var bytesWritten);
-						if (result != OperationStatus.Done)
-							throw new FileLoadException($"Invalid brotli .usmap decompress result: {result} | {bytesWritten} / {uncompressedSize} | {bytesConsumed} / {compressedSize}");
+							, out var bytesWritten))
+						{
+							throw new FileLoadException($"Failed to decompress brotli .usmap data: {bytesWritten} / {uncompressedSize}");
+						}
+
 						break;
 					}
 					case EUsmapCompressionMethod.ZStandard:
