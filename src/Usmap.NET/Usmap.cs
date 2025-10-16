@@ -151,6 +151,7 @@ public sealed class Usmap
 							.Span
 #endif
 						);
+
 						if (result != uncompressedSize)
 							throw new FileLoadException($"Invalid oodle .usmap decompress result: {result} / {uncompressedSize}");
 						break;
