@@ -1,13 +1,12 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
-using System.IO.Compression;
 using System.Text;
 
 using GenericReader;
 
 using Microsoft.Win32.SafeHandles;
 
-using ZstdSharp;
+using OffiUtils;
 
 namespace UsmapDotNet;
 
@@ -137,58 +136,33 @@ public sealed class Usmap
             }
             else
             {
+                options.Decompressor ??= DecompressorBuilder.DefaultWithOodlePort.Build();
+
                 compressionBuffer = ArrayPool<byte>.Shared.Rent(compressedSize + uncompressedSize);
                 var compressedSpan = new Span<byte>(compressionBuffer, 0, compressedSize);
                 usmapReader.Read(compressedSpan);
                 var uncompressedData = new UsmapData(compressionBuffer, compressedSize, uncompressedSize);
 
-                switch (compressionMethod)
+                CompressionAlgorithm compressionAlgorithm = compressionMethod switch
                 {
-                    case EUsmapCompressionMethod.Oodle:
-                    {
-                        if (options.Oodle is null)
-                            throw new InvalidOperationException(".usmap data is compressed and oodle instance was null");
+                    EUsmapCompressionMethod.Oodle => CompressionAlgorithm.Oodle,
+                    EUsmapCompressionMethod.Brotli => CompressionAlgorithm.Brotli,
+                    EUsmapCompressionMethod.ZStandard => CompressionAlgorithm.Zstd,
+                    _ => throw new UnreachableException()
+                };
 
-                        int result = (int)options.Oodle.Decompress(compressedSpan, uncompressedData
+                if (!options.Decompressor.TryGetValue(compressionAlgorithm, out DecompressDelegate? decompressDelegate))
+                {
+                    throw new InvalidOperationException($".usmap data is compressed with {compressionMethod.ToStringFast()} but no decompressor was registered");
+                }
+
+                if (!decompressDelegate(compressedSpan, uncompressedData
 #if !NET9_0_OR_GREATER
-                            .Span
+                        .Span
 #endif
-                        );
-
-                        if (result != uncompressedSize)
-                            throw new FileLoadException($"Invalid oodle .usmap data decompress result: {result} / {uncompressedSize}");
-
-                        break;
-                    }
-                    case EUsmapCompressionMethod.Brotli:
-                    {
-                        if (!BrotliDecoder.TryDecompress(compressedSpan, uncompressedData
-#if !NET9_0_OR_GREATER
-                            .Span
-#endif
-                            , out int bytesWritten))
-                        {
-                            throw new FileLoadException($"Failed to decompress brotli .usmap data: {bytesWritten} / {uncompressedSize}");
-                        }
-
-                        break;
-                    }
-                    case EUsmapCompressionMethod.ZStandard:
-                    {
-                        using var decompressor = new Decompressor();
-                        if (!decompressor.TryUnwrap(compressedSpan, uncompressedData
-#if !NET9_0_OR_GREATER
-                            .Span
-#endif
-                            , out int bytesWritten))
-                        {
-                            throw new FileLoadException($"Failed to decompress zstd .usmap data: {bytesWritten} / {uncompressedSize}");
-                        }
-
-                        break;
-                    }
-                    default:
-                        throw new UnreachableException();
+                    , out int bytesWritten) || bytesWritten != uncompressedSize)
+                {
+                    throw new FileLoadException($"Failed to decompress {compressionMethod.ToStringFast()} .usmap data: {bytesWritten} / {uncompressedSize}");
                 }
 
                 var reader = new UsmapReader(uncompressedData);

@@ -1,6 +1,9 @@
-﻿namespace UsmapDotNet;
+﻿using NetEscapades.EnumGenerators;
+
+namespace UsmapDotNet;
 
 /// <summary/>
+[EnumExtensions]
 public enum EUsmapCompressionMethod : byte
 {
     /// <summary/>

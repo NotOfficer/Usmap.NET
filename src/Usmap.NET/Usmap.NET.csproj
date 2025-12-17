@@ -27,11 +27,14 @@
 
   <ItemGroup>
     <PackageReference Include="GenericReader" />
+    <PackageReference Include="OffiUtils" />
     <PackageReference Include="NetEscapades.EnumGenerators" PrivateAssets="all" ExcludeAssets="runtime">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Oodle.NET" />
-    <PackageReference Include="ZstdSharp.Port" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <NoWarn>DECOM001;OODLE001</NoWarn>
+  </PropertyGroup>
 
 </Project>
