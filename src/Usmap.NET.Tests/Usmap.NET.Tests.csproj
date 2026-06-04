@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="OodleSharp" />
     <PackageReference Include="ZstdSharp.Port" />
   </ItemGroup>
 
