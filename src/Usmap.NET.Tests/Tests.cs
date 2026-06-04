@@ -192,7 +192,7 @@ public class OodleCompressedTests : IUsmapTest
     [Fact]
     public void ParseFromFile()
     {
-        var usmap = Usmap.Parse(FilePath);
+        var usmap = Usmap.Parse(FilePath, Constants.UsmapOptions);
         Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
         Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
         Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
@@ -202,7 +202,7 @@ public class OodleCompressedTests : IUsmapTest
     [Fact]
     public void ParseFromStream()
     {
-        var usmap = Usmap.Parse(File.OpenRead(FilePath));
+        var usmap = Usmap.Parse(File.OpenRead(FilePath), Constants.UsmapOptions);
         Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
         Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
         Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
@@ -212,7 +212,7 @@ public class OodleCompressedTests : IUsmapTest
     [Fact]
     public void ParseFromBuffer()
     {
-        var usmap = Usmap.Parse(File.ReadAllBytes(FilePath));
+        var usmap = Usmap.Parse(File.ReadAllBytes(FilePath), Constants.UsmapOptions);
         Assert.Equal(Constants.ExpectedSchemas, usmap.Schemas.Count);
         Assert.Equal(Constants.ExpectedEnums, usmap.Enums.Count);
         Assert.Equal(Constants.ExpectedNames, usmap.Names.Count);
@@ -227,7 +227,7 @@ public class OodleCompressedV3Tests : IUsmapTest
     [Fact]
     public void ParseFromFile()
     {
-        var usmap = Usmap.Parse(FilePath);
+        var usmap = Usmap.Parse(FilePath, Constants.UsmapOptions);
         Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
         Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
         Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
@@ -237,7 +237,7 @@ public class OodleCompressedV3Tests : IUsmapTest
     [Fact]
     public void ParseFromStream()
     {
-        var usmap = Usmap.Parse(File.OpenRead(FilePath));
+        var usmap = Usmap.Parse(File.OpenRead(FilePath), Constants.UsmapOptions);
         Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
         Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
         Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
@@ -247,7 +247,7 @@ public class OodleCompressedV3Tests : IUsmapTest
     [Fact]
     public void ParseFromBuffer()
     {
-        var usmap = Usmap.Parse(File.ReadAllBytes(FilePath));
+        var usmap = Usmap.Parse(File.ReadAllBytes(FilePath), Constants.UsmapOptions);
         Assert.Equal(Constants.ExpectedSchemasV3, usmap.Schemas.Count);
         Assert.Equal(Constants.ExpectedEnumsV3, usmap.Enums.Count);
         Assert.Equal(Constants.ExpectedNamesV3, usmap.Names.Count);
