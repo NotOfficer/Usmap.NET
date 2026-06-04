@@ -88,10 +88,7 @@ public sealed class Usmap
     /// <exception cref="FileLoadException">Error while parsing</exception>
     /// <exception cref="InvalidOperationException">Data is compressed and oodle instance was <see langword="null"/></exception>
     public static Usmap Parse<TReader>(ref TReader usmapReader, UsmapOptions? options, bool leaveOpen = false)
-        where TReader : IGenericReader
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
+        where TReader : IGenericReader, allows ref struct
     {
         byte[]? compressionBuffer = null;
 
@@ -100,6 +97,7 @@ public sealed class Usmap
             ushort magic = usmapReader.Read<ushort>();
             if (magic != Magic)
                 throw new FileLoadException($"Invalid .usmap magic constant: 0x{magic:X4}, expected: 0x{Magic:X4}");
+
             EUsmapVersion version = usmapReader.Read<EUsmapVersion>();
             if (version > EUsmapVersion.Latest)
                 throw new FileLoadException($"Invalid or unsupported .usmap version: {(int)version}");
@@ -160,11 +158,7 @@ public sealed class Usmap
                     throw new InvalidOperationException($".usmap data is compressed with {compressionMethod.ToStringFast()} but no decompressor was registered");
                 }
 
-                if (!decompressDelegate(compressedSpan, uncompressedData
-#if !NET9_0_OR_GREATER
-                        .Span
-#endif
-                    , out int bytesWritten) || bytesWritten != uncompressedSize)
+                if (!decompressDelegate(compressedSpan, uncompressedData, out int bytesWritten) || bytesWritten != uncompressedSize)
                 {
                     throw new FileLoadException($"Failed to decompress {compressionMethod.ToStringFast()} .usmap data: {bytesWritten} / {uncompressedSize}");
                 }
@@ -183,10 +177,7 @@ public sealed class Usmap
     }
 
     private static Usmap ParseInternal<TReader>(ref TReader reader, UsmapOptions options, bool longFName, bool largeEnums, bool explicitEnumValues)
-        where TReader : IGenericReader
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
+        where TReader : IGenericReader, allows ref struct
     {
         string[] names;
         UsmapEnum[] enums;

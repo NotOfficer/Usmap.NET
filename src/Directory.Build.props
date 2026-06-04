@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -14,7 +14,7 @@
   <PropertyGroup>
     <NeutralLanguage>en</NeutralLanguage>
     <Authors>NotOfficer</Authors>
-    <Copyright>Copyright (c) 2025 NotOfficer</Copyright>
+    <Copyright>Copyright (c) 2026 NotOfficer</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">

@@ -1,5 +1,7 @@
 using OffiUtils;
 
+using OodleSharp;
+
 using ZstdSharp;
 
 namespace UsmapDotNet.Tests;
@@ -17,7 +19,8 @@ public static class Constants
 
     public static UsmapOptions UsmapOptions { get; } = new()
     {
-        Decompressor = DecompressorBuilder.DefaultWithOodlePort
+        Decompressor = DecompressorBuilder.Default
+            .Add(CompressionAlgorithm.Oodle, OodleDecompressor.TryDecompress)
             .Add(CompressionAlgorithm.Zstd, TryDecompressZstd)
             .Build()
     };
@@ -35,7 +38,7 @@ public static class Constants
     public const int ExpectedNamesV4 = 192297;
 }
 
-public interface IUsmapTest
+file interface IUsmapTest
 {
     void ParseFromFile();
     void ParseFromStream();

@@ -22,10 +22,7 @@ public sealed class UsmapPropertyData
     }
 
     internal static UsmapPropertyData Deserialize<TReader>(ref TReader reader, string[] names)
-        where TReader : IGenericReader
-#if NET9_0_OR_GREATER
-        , allows ref struct
-#endif
+        where TReader : IGenericReader, allows ref struct
     {
         EUsmapPropertyType propType = reader.Read<EUsmapPropertyType>();
         var data = new UsmapPropertyData(propType);
