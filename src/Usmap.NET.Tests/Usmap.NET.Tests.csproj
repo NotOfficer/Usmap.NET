@@ -36,8 +36,4 @@
     </None>
   </ItemGroup>
 
-  <PropertyGroup>
-    <NoWarn>DECOM001;OODLE001</NoWarn>
-  </PropertyGroup>
-
 </Project>

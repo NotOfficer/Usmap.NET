@@ -8,6 +8,8 @@ using Microsoft.Win32.SafeHandles;
 
 using OffiUtils;
 
+using OodleSharp;
+
 namespace UsmapDotNet;
 
 /// <summary/>
@@ -136,7 +138,9 @@ public sealed class Usmap
             }
             else
             {
-                options.Decompressor ??= DecompressorBuilder.DefaultWithOodlePort.Build();
+                options.Decompressor ??= DecompressorBuilder.Default
+                    .Add(CompressionAlgorithm.Oodle, OodleDecompressor.TryDecompress)
+                    .Build();
 
                 compressionBuffer = ArrayPool<byte>.Shared.Rent(compressedSize + uncompressedSize);
                 var compressedSpan = new Span<byte>(compressionBuffer, 0, compressedSize);

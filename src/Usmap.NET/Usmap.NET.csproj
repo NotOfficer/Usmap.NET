@@ -28,6 +28,7 @@
   <ItemGroup>
     <PackageReference Include="GenericReader" />
     <PackageReference Include="OffiUtils" />
+    <PackageReference Include="OodleSharp" />
     <PackageReference Include="NetEscapades.EnumGenerators" PrivateAssets="all" ExcludeAssets="runtime">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
