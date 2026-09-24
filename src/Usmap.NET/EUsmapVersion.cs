@@ -21,6 +21,10 @@ public enum EUsmapVersion : byte
     /// Adds support for explicit enum values
     /// </summary>
     ExplicitEnumValues,
+    /// <summary>
+    /// Adds engine versioning information to the file header
+    /// </summary>
+    EngineVersioning,
 
     /// <summary/>
     LatestPlusOne,

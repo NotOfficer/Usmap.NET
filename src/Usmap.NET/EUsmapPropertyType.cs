@@ -68,7 +68,22 @@ public enum EUsmapPropertyType : byte
     Utf8StrProperty,
     /// <summary/>
     AnsiStrProperty,
-    
+    /// <summary/>
+    ClassProperty,
+    /// <summary/>
+    MulticastInlineDelegateProperty,
+    /// <summary/>
+    SoftClassProperty,
+    /// <summary/>
+    VerseStringProperty,
+    /// <summary/>
+    VerseDynamicProperty,
+    /// <summary/>
+    VerseFunctionProperty,
+
+    //CustomProperty_FD = 0xFD,
+    //CustomProperty_FE = 0xFE,
+
     /// <summary/>
     Unknown = byte.MaxValue
 }
