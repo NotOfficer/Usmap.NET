@@ -103,12 +103,23 @@ public sealed class Usmap
             bool bHasVersioning = version >= EUsmapVersion.PackageVersioning && usmapReader.ReadBoolean();
             if (bHasVersioning)
             {
+                if (version >= EUsmapVersion.EngineVersioning)
+                {
+                    // FEngineVersionBase: major, minor, patch, and changelist.
+                    usmapReader.Position += sizeof(ushort) * 3 + sizeof(uint);
+                    // FEngineVersion: branch name stored as an FString.
+                    usmapReader.ReadFString();
+                }
+
                 //usmapReader.Read<FPackageFileVersion>();
                 usmapReader.Position += sizeof(int) * 2;
 
                 //usmapReader.Read<FCustomVersionContainer>();
                 int versionsLength = usmapReader.Read<int>();
                 usmapReader.Position += versionsLength * (16 /* FGuid */ + sizeof(int));
+
+                // NetCL follows the custom version container in all versioned headers.
+                usmapReader.Position += sizeof(uint);
             }
 
             EUsmapCompressionMethod compressionMethod = usmapReader.Read<EUsmapCompressionMethod>();
