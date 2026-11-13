@@ -8,6 +8,7 @@ namespace UsmapDotNet.Tests;
 
 public static class Constants
 {
+#if !NET11_0_OR_GREATER
     public static bool TryDecompressZstd(
         ReadOnlySpan<byte> source,
         Span<byte> destination,
@@ -16,12 +17,15 @@ public static class Constants
         using var decompressor = new Decompressor();
         return decompressor.TryUnwrap(source, destination, out bytesWritten);
     }
+#endif
 
     public static UsmapOptions UsmapOptions { get; } = new()
     {
         Decompressor = DecompressorBuilder.Default
             .Add(CompressionAlgorithm.Oodle, OodleDecompressor.TryDecompress)
+#if !NET11_0_OR_GREATER
             .Add(CompressionAlgorithm.Zstd, TryDecompressZstd)
+#endif
             .Build()
     };
 
